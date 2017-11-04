@@ -1,4 +1,6 @@
 <!DOCTYPE html>
+<title>London Borough Lookup</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
 
   body {
@@ -12,6 +14,25 @@
 
   a {
     color: inherit;
+  }
+
+  input, button, label {
+    display: block;
+    padding: 5px;
+    text-align: left;
+    font-size: inherit;
+    margin: 10px 0 0;
+  }
+  button {
+    background: green;
+    color: white;
+    border: 1px solid white;
+  }
+  input {
+    width: 100%;
+  }
+  label {
+    padding: 0;
   }
 
   #output > * {
@@ -31,8 +52,20 @@
     display: block;
   }
 
+  #output.loading #loading {
+    display: block;
+  }
+
   #output.something-went-wrong #something-went-wrong {
     display: block;
+  }
+
+  #output.loading #loading {
+    display: block;
+    background: white url(loading_spinner.gif) no-repeat bottom center;
+    background-size: 4em 4em;
+    min-height: 4em;
+    text-align: center;
   }
 
   footer {
@@ -47,11 +80,12 @@
     Enter a postcode
   </label>
   <input id="postcode" placeholder="AB12 3CD">
-  <button id="postcode-submit">Search by postcode</button>
+  <button id="postcode-submit">Find the borough</button>
   <div id="output">
     <div id="success">The borough is <strong class="borough"></strong></div>
     <div id="not-london">That's not in London :(</div>
     <div id="something-went-wrong">Sorry, something went wrong :(</div>
+    <div id="loading">Loading Postcode Data</div>
   </div>
 
 </main>
@@ -60,17 +94,18 @@
 </footer>
 
 <script>
+  var output = document.querySelector('#output');
+  function setClass(className) {
+    output.setAttribute('class', className);
+  }
+
   function clickHandler(e) {
     e.preventDefault();
     var postcode = document.getElementById('postcode').value;
     lookupPostcode(postcode, function (data) {
-      var output = document.querySelector('#output');
       console.log('raw data', data);
       var region = data.european_electoral_region;
 
-      function setClass(className) {
-        output.setAttribute('class', className);
-      }
 
       if (!region) {
         setClass('something-went-wrong');
