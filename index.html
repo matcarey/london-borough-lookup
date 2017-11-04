@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<style>
+
+  body {
+    background: grey;
+    color: white;
+    font-size: 24px;
+    font-family: sans-serif;
+    box-sizing: border-box;
+    padding: 20px;
+  }
+
+  a {
+    color: inherit;
+  }
+
+  #output > * {
+    display: none;
+    background: white;
+    padding: 20px;
+    border: 1px solid black;
+    color: black;
+    margin-top: 40px;
+  }
+
+  #output.success #success {
+    display: block;
+  }
+
+  #output.not-london #not-london {
+    display: block;
+  }
+
+  #output.something-went-wrong #something-went-wrong {
+    display: block;
+  }
+
+  footer {
+    margin-top: 40px;
+  }
+</style>
+<header>
+  <h1>London Borough Lookup</h1>
+</header>
+<main id="main">
+  <label for="postcode">
+    Enter a postcode
+  </label>
+  <input id="postcode" placeholder="AB12 3CD">
+  <button id="postcode-submit">Search by postcode</button>
+  <div id="output">
+    <div id="success">The borough is <strong class="borough"></strong></div>
+    <div id="not-london">That's not in London :(</div>
+    <div id="something-went-wrong">Sorry, something went wrong :(</div>
+  </div>
+
+</main>
+<footer>
+  A mini project by <a href="https://yagni.digital/">YAGNI Digital</a>
+</footer>
+
+<script>
+  function clickHandler(e) {
+    e.preventDefault();
+    var postcode = document.getElementById('postcode').value;
+    lookupPostcode(postcode, function (data) {
+      var output = document.querySelector('#output');
+      console.log('raw data', data);
+      var region = data.european_electoral_region;
+
+      function setClass(className) {
+        output.setAttribute('class', className);
+      }
+
+      if (!region) {
+        setClass('something-went-wrong');
+        return;
+      }
+      if (region !== 'London') {
+        setClass('not-london');
+        return;
+      }
+      var borough = data.admin_district;
+      if (!borough) {
+        setClass('something-went-wrong');
+        return;
+      }
+      output.querySelector('#success strong').innerText = borough;
+      setClass('success');
+    });
+  };
+  document.getElementById('postcode-submit').addEventListener('click', clickHandler);
+  document.getElementById('postcode').addEventListener('keyup', function (e) {
+    if (e.keyCode === 13) {
+      clickHandler(e);
+    }
+  });
+
+  function lookupPostcode(postcode, callback) {
+    var anHttpRequest = new XMLHttpRequest();
+    anHttpRequest.onreadystatechange = function () {
+      if (anHttpRequest.readyState == 4 && anHttpRequest.status == 200)
+        callback(JSON.parse(anHttpRequest.responseText).result);
+    }
+
+    anHttpRequest.open("GET", "https://api.postcodes.io/postcodes/" + postcode, true);
+    anHttpRequest.send(null);
+  }
+
+</script>
